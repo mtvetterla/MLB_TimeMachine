@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLB // Baseball Time Machine</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+:root {
+    --cream: #f5e8c8;
+    --paper: #e8d5a8;
+    --ink: #201c16;
+    --red: #c9362b;
+    --blue: #183a59;
+    --green: #315b42;
+    --yellow: #e5b94d;
+    --shadow: #8b7350;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background:
+        linear-gradient(rgba(20,20,20,.035) 50%, transparent 50%),
+        #17221d;
+    background-size: 100% 4px;
+    color: var(--ink);
+    font-family: 'VT323', monospace;
+    font-size: 21px;
+}
+
+/* CRT overlay */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(0,0,0,.06) 0px,
+            rgba(0,0,0,.06) 1px,
+            transparent 1px,
+            transparent 4px
+        );
+    z-index: 999;
+    mix-blend-mode: multiply;
+}
+
+header {
+    background:
+        radial-gradient(circle at center, #244d38 0, #102019 70%);
+    color: var(--cream);
+    border-bottom: 8px solid var(--yellow);
+    padding: 35px 20px 30px;
+    text-align: center;
+    box-shadow: 0 8px 0 #0b120f;
+}
+
+.logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(22px, 4vw, 42px);
+    line-height: 1.5;
+    color: #fff3c7;
+    text-shadow:
+        4px 4px 0 var(--red),
+        8px 8px 0 #000;
+}
+
+.subtitle {
+    margin-top: 20px;
+    color: #e5d6ad;
+    letter-spacing: 2px;
+}
+
+.scoreboard {
+    max-width: 1100px;
+    margin: 25px auto 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.scoreboard span {
+    background: #090d0b;
+    border: 3px solid #4d6657;
+    padding: 8px 13px;
+    color: #e3c55d;
+    font-family: 'Press Start 2P';
+    font-size: 9px;
+}
+
+.container {
+    width: min(1400px, 94%);
+    margin: auto;
+}
+
+.controls {
+    margin: 30px auto;
+    padding: 20px;
+    background: var(--paper);
+    border: 5px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--shadow);
+}
+
+.controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+input,
+button,
+select {
+    font: inherit;
+    border: 3px solid var(--ink);
+    background: #fff5d9;
+    color: var(--ink);
+    padding: 9px 12px;
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+input {
+    flex: 1;
+    min-width: 220px;
+}
+
+button {
+    cursor: pointer;
+    background: var(--red);
+    color: white;
+    font-family: 'Press Start 2P';
+    font-size: 9px;
+}
+
+button:hover,
+button.active {
+    background: var(--blue);
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
+.section-title {
+    color: var(--cream);
+    font-family: 'Press Start 2P';
+    font-size: 15px;
+    margin: 35px 0 20px;
+    text-shadow: 3px 3px #000;
+}
+
+.teams {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+    padding-bottom: 50px;
+}
+
+.card {
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.2), transparent 35%),
+        var(--cream);
+    border: 5px solid var(--ink);
+    box-shadow: 7px 7px 0 #000;
+    cursor: pointer;
+    transition: .12s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 11px 11px 0 #000;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: var(--team-color);
+}
+
+.card-header {
+    padding: 25px 18px 12px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.logo-pixel {
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    background: var(--team-color);
+    color: white;
+    border: 4px solid var(--ink);
+    font-family: 'Press Start 2P';
+    font-size: 15px;
+    box-shadow: 4px 4px 0 var(--ink);
+}
+
+.team-name {
+    font-family: 'Press Start 2P';
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.location {
+    color: #604a32;
+    margin-top: 5px;
+}
+
+.card-body {
+    padding: 5px 18px 20px;
+}
+
+.card-body p {
+    margin: 6px 0;
+}
+
+.tag {
+    display: inline-block;
+    padding: 3px 7px;
+    margin: 3px 3px 3px 0;
+    background: var(--team-color);
+    color: white;
+    border: 2px solid var(--ink);
+    font-size: 16px;
+}
+
+.year {
+    font-family: 'Press Start 2P';
+    color: var(--red);
+}
+
+.click {
+    display: block;
+    text-align: right;
+    color: #725f42;
+    font-size: 16px;
+    margin-top: 12px;
+}
+
+/* Modal */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.82);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-box {
+    width: min(850px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--cream);
+    border: 7px solid var(--ink);
+    box-shadow: 12px 12px 0 #000;
+}
+
+.modal-top {
+    padding: 25px;
+    background: var(--team-color);
+    color: white;
+    border-bottom: 5px solid var(--ink);
+}
+
+.modal-top h2 {
+    font-family: 'Press Start 2P';
+    font-size: 19px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.modal-content {
+    padding: 25px;
+}
+
+.close {
+    float: right;
+    margin-left: 15px;
+    background: #111;
+}
+
+.timeline {
+    border-left: 5px dotted var(--ink);
+    margin: 25px 0 15px 15px;
+    padding-left: 25px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border: 3px solid var(--ink);
+    background: var(--red);
+    left: -35px;
+    top: 3px;
+}
+
+.timeline-year {
+    font-family: 'Press Start 2P';
+    font-size: 11px;
+    color: var(--red);
+    margin-bottom: 7px;
+}
+
+footer {
+    background: #0d1712;
+    color: #a8a17d;
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 6px solid var(--yellow);
+}
+
+footer .pixel {
+    font-family: 'Press Start 2P';
+    font-size: 11px;
+    line-height: 2;
+}
+
+.empty {
+    color: var(--cream);
+    text-align: center;
+    grid-column: 1/-1;
+    padding: 50px;
+}
+
+@media(max-width:600px) {
+    .teams {
+        grid-template-columns: 1fr;
+    }
+
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    input {
+        min-width: 0;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">MLB // TIME MACHINE</div>
+    <div class="subtitle">LOCATION • ORIGIN • RELOCATION • LEGACY</div>
+
+    <div class="scoreboard">
+        <span>30 CLUBS</span>
+        <span>2 LEAGUES</span>
+        <span>100+ YEARS</span>
+        <span>1 GAME</span>
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="controls">
+        <div class="controls-row">
+            <input
+                id="search"
+                type="search"
+                placeholder="SEARCH TEAM, CITY OR HISTORY..."
+                aria-label="Search teams"
+            >
+
+            <button class="filter active" data-league="ALL">ALL CLUBS</button>
+            <button class="filter" data-league="AL">AMERICAN</button>
+            <button class="filter" data-league="NL">NATIONAL</button>
+        </div>
+    </section>
+
+    <h2 class="section-title">SELECT A CLUB</h2>
+
+    <section id="teams" class="teams"></section>
+
+</main>
+
+<footer>
+    <div class="pixel">PRESS START // EXPLORE BASEBALL HISTORY</div>
+    <p>AN UNOFFICIAL INTERACTIVE MLB HISTORY ARCHIVE</p>
+</footer>
+
+<div id="modal" class="modal">
+    <div class="modal-box">
+        <div id="modalTop" class="modal-top">
+            <button class="close" onclick="closeModal()">X</button>
+            <h2 id="modalName"></h2>
+            <div id="modalLocation"></div>
+        </div>
+
+        <div class="modal-content">
+            <p id="modalSummary"></p>
+
+            <h3>HISTORICAL TIMELINE</h3>
+
+            <div id="timeline" class="timeline"></div>
+
+            <div id="modalTags"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const teams = [
+
+/* AMERICAN LEAGUE */
+
+{
+    name: "Baltimore Orioles",
+    short: "BAL",
+    league: "AL",
+    city: "Baltimore, Maryland",
+    color: "#DF4601",
+    origin: "1901",
+    championships: "3 World Series",
+    summary: "The modern Orioles franchise traces its roots to the original American League clubs of 1901 and became Baltimore's Orioles in the 1950s.",
+    history: [
+        ["1901", "Founded as the Milwaukee Brewers in the American League."],
+        ["1902", "Franchise moves to St. Louis and becomes the Browns."],
+        ["1954", "The Browns relocate to Baltimore and become the Orioles."],
+        ["1966", "Baltimore wins its first World Series."],
+        ["1983", "Orioles capture another World Series championship."],
+        ["1997", "Baltimore wins the AL East and returns to the postseason."]
+    ]
+},
+
+{
+    name: "Boston Red Sox",
+    short: "BOS",
+    league: "AL",
+    city: "Boston, Massachusetts",
+    color: "#BD3039",
+    origin: "1901",
+    championships: "9 World Series",
+    summary: "One of the American League's original franchises, Boston developed one of baseball's most recognizable identities and rivalries.",
+    history: [
+        ["1901", "Founded as the Boston Americans."],
+        ["1903", "Win the first modern World Series."],
+        ["1908", "The team officially adopts the Red Sox name."],
+        ["1919", "Babe Ruth is sold to the New York Yankees."],
+        ["2004", "End an 86-year World Series drought with a historic comeback."],
+        ["2018", "Win another World Series after a franchise-record regular season."]
+    ]
+},
+
+{
+    name: "Chicago White Sox",
+    short: "CWS",
+    league: "AL",
+    city: "Chicago, Illinois",
+    color: "#27251F",
+    origin: "1901",
+    championships: "3 World Series",
+    summary: "An original American League franchise, the White Sox have called Chicago's South Side home throughout their history.",
+    history: [
+        ["1901", "Begin play as one of the original American League franchises."],
+        ["1906", "Win the World Series in an all-Chicago matchup."],
+        ["1919", "The Black Sox scandal dramatically changes baseball history."],
+        ["1959", "Return to the World Series."],
+        ["2005", "Sweep Houston to win their first World Series since 1917."]
+    ]
+},
+
+{
+    name: "Cleveland Guardians",
+    short: "CLE",
+    league: "AL",
+    city: "Cleveland, Ohio",
+    color: "#E31937",
+    origin: "1901",
+    championships: "2 World Series",
+    summary: "Cleveland's franchise is one of the American League's original clubs and has undergone several identity changes.",
+    history: [
+        ["1901", "Join the American League as the Cleveland Blues."],
+        ["1915", "Adopt the Indians name."],
+        ["1920", "Win their first World Series."],
+        ["1948", "Win their second World Series."],
+        ["1995", "Return to the World Series during a dominant 1990s run."],
+        ["2022", "Adopt the Guardians name."]
+    ]
+},
+
+{
+    name: "Detroit Tigers",
+    short: "DET",
+    league: "AL",
+    city: "Detroit, Michigan",
+    color: "#0C2340",
+    origin: "1901",
+    championships: "4 World Series",
+    summary: "Detroit's Tigers are an original American League franchise and one of the oldest continuously operating teams under the same name.",
+    history: [
+        ["1901", "Begin play as an original American League club."],
+        ["1935", "Win their first World Series."],
+        ["1945", "Capture their second championship."],
+        ["1968", "Beat the Cardinals to win the World Series."],
+        ["1984", "Win 104 games and claim another World Series."],
+        ["2012", "Return to the World Series behind Miguel Cabrera's historic season."]
+    ]
+},
+
+{
+    name: "Houston Astros",
+    short: "HOU",
+    league: "AL",
+    city: "Houston, Texas",
+    color: "#002D62",
+    origin: "1962",
+    championships: "2 World Series",
+    summary: "Houston began as an expansion club in the National League before becoming an American League franchise in 2013.",
+    history: [
+        ["1962", "Founded as the Houston Colt .45s."],
+        ["1965", "Become the Houston Astros and move into the Astrodome."],
+        ["1980", "Reach the postseason for the first time."],
+        ["2005", "Reach their first World Series."],
+        ["2013", "Move from the NL to the American League."],
+        ["2017", "Win the franchise's first World Series."],
+        ["2022", "Capture their second World Series."]
+    ]
+},
+
+{
+    name: "Kansas City Royals",
+    short: "KC",
+    league: "AL",
+    city: "Kansas City, Missouri",
+    color: "#004687",
+    origin: "1969",
+    championships: "2 World Series",
+    summary: "The Royals were created as an expansion franchise after Kansas City lost the Athletics to Oakland.",
+    history: [
+        ["1969", "Begin play as an American League expansion franchise."],
+        ["1980", "Reach the World Series."],
+        ["1985", "Win their first World Series."],
+        ["2014", "Return to the World Series."],
+        ["2015", "Win their second World Series."],
+        ["2019", "Celebrate 50 seasons of Royals baseball."]
+    ]
+},
+
+{
+    name: "Los Angeles Angels",
+    short: "LAA",
+    league: "AL",
+    city: "Anaheim, California",
+    color: "#BA0021",
+    origin: "1961",
+    championships: "1 World Series",
+    summary: "The Angels were founded as an expansion franchise and have played under several names while remaining in Southern California.",
+    history: [
+        ["1961", "Begin play as the Los Angeles Angels."],
+        ["1966", "Move into Anaheim Stadium."],
+        ["1972", "Become the California Angels."],
+        ["1997", "Become the Anaheim Angels."],
+        ["2002", "Win their first World Series."],
+        ["2005", "Adopt the Los Angeles Angels of Anaheim name."]
+    ]
+},
+
+{
+    name: "Minnesota Twins",
+    short: "MIN",
+    league: "AL",
+    city: "Minneapolis, Minnesota",
+    color: "#002B5C",
+    origin: "1901",
+    championships: "3 World Series",
+    summary: "The Twins descend from the original Washington Senators franchise, which relocated to Minnesota in 1961.",
+    history: [
+        ["1901", "Begin as the Washington Senators."],
+        ["1924", "Win the World Series in Washington."],
+        ["1961", "Move to Minnesota and become the Twins."],
+        ["1987", "Win their first World Series in Minnesota."],
+        ["1991", "Capture one of baseball's most memorable World Series."],
+        ["2009", "Move into Target Field."]
+    ]
+},
+
+{
+    name: "New York Yankees",
+    short: "NYY",
+    league: "AL",
+    city: "New York, New York",
+    color: "#003087",
+    origin: "1903",
+    championships: "27 World Series",
+    summary: "The Yankees grew from the franchise that began in Baltimore and later became one of the most successful organizations in professional sports.",
+    history: [
+        ["1903", "Begin as the New York Highlanders."],
+        ["1913", "Adopt the New York Yankees name."],
+        ["1923", "Open Yankee Stadium and win the World Series."],
+        ["1920s", "Babe Ruth helps transform the Yankees into a baseball powerhouse."],
+        ["1996", "Begin a dynasty that produces four championships in five seasons."],
+        ["2009", "Win their 27th World Series."]
+    ]
+},
+
+{
+    name: "Oakland Athletics",
+    short: "ATH",
+    league: "AL",
+    city: "West Sacramento, California",
+    color: "#003831",
+    origin: "1901",
+    championships: "9 World Series",
+    summary: "The Athletics began in Philadelphia, moved to Kansas City, then Oakland, and are currently playing temporarily in West Sacramento.",
+    history: [
+        ["1901", "Founded in Philadelphia as an original American League club."],
+        ["1955", "Relocate to Kansas City."],
+        ["1968", "Move west to Oakland."],
+        ["1972–1974", "Win three consecutive World Series."],
+        ["1989", "Return to the World Series and defeat the Giants."],
+        ["2025", "Begin playing home games in West Sacramento during their transition toward Las Vegas."]
+    ]
+},
+
+{
+    name: "Seattle Mariners",
+    short: "SEA",
+    league: "AL",
+    city: "Seattle, Washington",
+    color: "#0C2C56",
+    origin: "1977",
+    championships: "0 World Series",
+    summary: "Seattle's Mariners entered the American League as an expansion franchise in 1977.",
+    history: [
+        ["1977", "Begin play as an American League expansion team."],
+        ["1995", "Ken Griffey Jr. and Edgar Martinez lead a dramatic playoff run."],
+        ["2001", "Win a record 116 regular-season games."],
+        ["2001", "Ichiro Suzuki wins AL MVP and Rookie of the Year."],
+        ["2022", "Return to the postseason for the first time since 2001."]
+    ]
+},
+
+{
+    name: "Tampa Bay Rays",
+    short: "TB",
+    league: "AL",
+    city: "St. Petersburg, Florida",
+    color: "#092C5C",
+    origin: "1998",
+    championships: "0 World Series",
+    summary: "Tampa Bay joined MLB as an expansion franchise in 1998, originally playing as the Devil Rays.",
+    history: [
+        ["1998", "Begin play as the Tampa Bay Devil Rays."],
+        ["2008", "Become the Tampa Bay Rays."],
+        ["2008", "Reach their first World Series."],
+        ["2020", "Return to the World Series."],
+        ["2025", "Begin temporary home arrangements in Tampa Bay following damage to Tropicana Field."]
+    ]
+},
+
+{
+    name: "Texas Rangers",
+    short: "TEX",
+    league: "AL",
+    city: "Arlington, Texas",
+    color: "#003278",
+    origin: "1961",
+    championships: "1 World Series",
+    summary: "The Rangers trace their franchise history to the original expansion Washington Senators of 1961.",
+    history: [
+        ["1961", "Founded as the new Washington Senators."],
+        ["1972", "Move to Arlington, Texas and become the Rangers."],
+        ["2010", "Reach their first World Series."],
+        ["2011", "Return to the World Series."],
+        ["2023", "Win their first World Series championship."]
+    ]
+},
+
+/* NATIONAL LEAGUE */
+
+{
+    name: "Arizona Diamondbacks",
+    short: "ARI",
+    league: "NL",
+    city: "Phoenix, Arizona",
+    color: "#A71930",
+    origin: "1998",
+    championships: "1 World Series",
+    summary: "Arizona joined the National League as an expansion team in 1998 and quickly became a postseason contender.",
+    history: [
+        ["1998", "Begin play as an NL expansion franchise."],
+        ["2001", "Defeat the Yankees in seven games to win their first World Series."],
+        ["2011", "Return to the postseason."],
+        ["2017", "Reach the NL Division Series."],
+        ["2023", "Return to the World Series."]
+    ]
+},
+
+{
+    name: "Atlanta Braves",
+    short: "ATL",
+    league: "NL",
+    city: "Atlanta, Georgia",
+    color: "#CE1141",
+    origin: "1871",
+    championships: "4 World Series",
+    summary: "The Braves possess one of baseball's longest franchise histories, beginning in Boston before moving to Milwaukee and then Atlanta.",
+    history: [
+        ["1871", "Franchise begins in Boston."],
+        ["1912", "Adopt the Braves name."],
+        ["1953", "Move to Milwaukee."],
+        ["1966", "Move to Atlanta."],
+        ["1995", "Win the World Series during their historic postseason run."],
+        ["2021", "Win another World Series."]
+    ]
+},
+
+{
+    name: "Chicago Cubs",
+    short: "CHC",
+    league: "NL",
+    city: "Chicago, Illinois",
+    color: "#0E3386",
+    origin: "1876",
+    championships: "3 World Series",
+    summary: "The Cubs are one of the oldest franchises in professional baseball and spent generations at Wrigley Field.",
+    history: [
+        ["1876", "Begin as one of the founding members of the National League."],
+        ["1908", "Win their second consecutive World Series."],
+        ["1916", "Move into Weeghman Park, later known as Wrigley Field."],
+        ["1984", "Return to the postseason."],
+        ["2016", "End a 108-year championship drought."],
+        ["2016", "Defeat Cleveland in a legendary seven-game World Series."]
+    ]
+},
+
+{
+    name: "Cincinnati Reds",
+    short: "CIN",
+    league: "NL",
+    city: "Cincinnati, Ohio",
+    color: "#C6011F",
+    origin: "1882",
+    championships: "5 World Series",
+    summary: "Cincinnati has a deep baseball tradition and is home to one of professional baseball's earliest major clubs.",
+    history: [
+        ["1882", "The Cincinnati Red Stockings begin play in the American Association."],
+        ["1890", "Join the National League."],
+        ["1919", "Win the World Series."],
+        ["1970", "The Big Red Machine begins its dominant era."],
+        ["1975", "Win a classic World Series against Boston."],
+        ["1976", "Repeat as World Series champions."]
+    ]
+},
+
+{
+    name: "Colorado Rockies",
+    short: "COL",
+    league: "NL",
+    city: "Denver, Colorado",
+    color: "#33006F",
+    origin: "1993",
+    championships: "0 World Series",
+    summary: "Colorado entered MLB during the 1993 expansion, bringing Major League Baseball to the Rocky Mountain region.",
+    history: [
+        ["1993", "Begin play as an NL expansion franchise."],
+        ["1995", "Move into Coors Field."],
+        ["2007", "Win the NL pennant after a remarkable late-season run."],
+        ["2007", "Reach their first World Series."],
+        ["2018", "Return to the postseason."]
+    ]
+},
+
+{
+    name: "Los Angeles Dodgers",
+    short: "LAD",
+    league: "NL",
+    city: "Los Angeles, California",
+    color: "#005A9C",
+    origin: "1883",
+    championships: "8 World Series",
+    summary: "The Dodgers began in Brooklyn before making one of the most important franchise moves in sports history to Los Angeles.",
+    history: [
+        ["1883", "Franchise begins in Brooklyn."],
+        ["1947", "Jackie Robinson breaks MLB's modern color barrier with Brooklyn."],
+        ["1955", "Brooklyn wins its first World Series."],
+        ["1958", "Move to Los Angeles."],
+        ["1988", "Win the World Series behind Kirk Gibson's famous home run."],
+        ["2020", "Win another World Series."],
+        ["2024", "Capture another World Series championship."]
+    ]
+},
+
+{
+    name: "Miami Marlins",
+    short: "MIA",
+    league: "NL",
+    city: "Miami, Florida",
+    color: "#00A3E0",
+    origin: "1993",
+    championships: "2 World Series",
+    summary: "The Marlins entered MLB as a Florida expansion club and won championships in two of their first eras.",
+    history: [
+        ["1993", "Begin play as the Florida Marlins."],
+        ["1997", "Win their first World Series."],
+        ["2003", "Win another World Series as a wild-card team."],
+        ["2012", "Move into the new Marlins Park."],
+        ["2012", "Adopt the Miami Marlins name."]
+    ]
+},
+
+{
+    name: "Milwaukee Brewers",
+    short: "MIL",
+    league: "NL",
+    city: "Milwaukee, Wisconsin",
+    color: "#12284B",
+    origin: "1969",
+    championships: "0 World Series",
+    summary: "The Brewers began as the Seattle Pilots before moving to Milwaukee after their inaugural season.",
+    history: [
+        ["1969", "Begin as the Seattle Pilots."],
+        ["1970", "Move to Milwaukee and become the Brewers."],
+        ["1982", "Win the AL pennant."],
+        ["1998", "Move from the American League to the National League."],
+        ["2011", "Return to the postseason and win the NL Central."]
+    ]
+},
+
+{
+    name: "New York Mets",
+    short: "NYM",
+    league: "NL",
+    city: "New York, New York",
+    color: "#002D72",
+    origin: "1962",
+    championships: "2 World Series",
+    summary: "The Mets were created to restore National League baseball to New York following the departures of the Dodgers and Giants.",
+    history: [
+        ["1962", "Begin play as a National League expansion franchise."],
+        ["1969", "Miracle Mets win their first World Series."],
+        ["1986", "Win another World Series in a dramatic seven-game series."],
+        ["2000", "Return to the World Series."],
+        ["2015", "Win the NL pennant."]
+    ]
+},
+
+{
+    name: "Philadelphia Phillies",
+    short: "PHI",
+    league: "NL",
+    city: "Philadelphia, Pennsylvania",
+    color: "#E81828",
+    origin: "1883",
+    championships: "2 World Series",
+    summary: "The Phillies are one of the oldest continuous one-city, one-name franchises in professional sports.",
+    history: [
+        ["1883", "Begin play as the Philadelphia Quakers."],
+        ["1890", "Adopt the Phillies nickname."],
+        ["1950", "The Whiz Kids reach the World Series."],
+        ["1980", "Win their first World Series."],
+        ["2008", "Win their second World Series."],
+        ["2022", "Return to the World Series."]
+    ]
+},
+
+{
+    name: "Pittsburgh Pirates",
+    short: "PIT",
+    league: "NL",
+    city: "Pittsburgh, Pennsylvania",
+    color: "#FDB827",
+    origin: "1887",
+    championships: "5 World Series",
+    summary: "Pittsburgh's franchise dates to the 19th century and has been home to legends including Honus Wagner, Roberto Clemente and Willie Stargell.",
+    history: [
+        ["1887", "Join the National League."],
+        ["1909", "Win their first World Series."],
+        ["1960", "Bill Mazeroski hits the famous walk-off World Series home run."],
+        ["1971", "Become the first MLB team to field an all-Black lineup."],
+        ["1979", "Win the World Series behind Willie Stargell."],
+        ["1990–1992", "Win three consecutive NL East titles."]
+    ]
+},
+
+{
+    name: "San Diego Padres",
+    short: "SD",
+    league: "NL",
+    city: "San Diego, California",
+    color: "#2F241D",
+    origin: "1969",
+    championships: "0 World Series",
+    summary: "The Padres joined MLB in 1969 as part of the National League's expansion into Southern California.",
+    history: [
+        ["1969", "Begin play as an NL expansion franchise."],
+        ["1984", "Reach their first World Series."],
+        ["1998", "Return to the World Series."],
+        ["2004", "Move into Petco Park."],
+        ["2022", "Return to the NLCS."]
+    ]
+},
+
+{
+    name: "San Francisco Giants",
+    short: "SF",
+    league: "NL",
+    city: "San Francisco, California",
+    color: "#FD5A1E",
+    origin: "1883",
+    championships: "8 World Series",
+    summary: "The Giants began as a New York franchise before moving west to San Francisco in 1958.",
+    history: [
+        ["1883", "Franchise begins in New York."],
+        ["1905", "Win the World Series."],
+        ["1954", "Win their final World Series in New York."],
+        ["1958", "Move to San Francisco."],
+        ["2010", "Win their first World Series in San Francisco."],
+        ["2012", "Win another championship."],
+        ["2014", "Capture their third World Series in five seasons."]
+    ]
+},
+
+{
+    name: "St. Louis Cardinals",
+    short: "STL",
+    league: "NL",
+    city: "St. Louis, Missouri",
+    color: "#C41E3A",
+    origin: "1882",
+    championships: "11 World Series",
+    summary: "The Cardinals are one of baseball's most successful franchises, with a history stretching back to the 19th century.",
+    history: [
+        ["1882", "Begin as the St. Louis Brown Stockings."],
+        ["1900", "Become the St. Louis Cardinals."],
+        ["1926", "Win their first World Series."],
+        ["1944", "Defeat the Browns in an all-St. Louis World Series."],
+        ["1967", "Win the World Series behind Bob Gibson."],
+        ["2006", "Win the first World Series at Busch Stadium III."],
+        ["2011", "Capture their 11th championship."]
+    ]
+},
+
+{
+    name: "Washington Nationals",
+    short: "WSH",
+    league: "NL",
+    city: "Washington, D.C.",
+    color: "#AB0003",
+    origin: "1969",
+    championships: "1 World Series",
+    summary: "The Nationals began as the Montreal Expos before relocating to Washington, D.C. in 2005.",
+    history: [
+        ["1969", "Founded as the Montreal Expos."],
+        ["1981", "Reach the postseason during the strike-shortened season."],
+        ["1994", "Lead the NL East when the season ends prematurely."],
+        ["2005", "Relocate to Washington and become the Nationals."],
+        ["2019", "Win their first World Series after starting the season 19–31."]
+    ]
+}
+
+];
+
+const teamGrid = document.getElementById("teams");
+const search = document.getElementById("search");
+const filters = document.querySelectorAll(".filter");
+
+let currentLeague = "ALL";
+
+function renderTeams() {
+
+    const query = search.value.toLowerCase().trim();
+
+    const filtered = teams.filter(team => {
+
+        const leagueMatch =
+            currentLeague === "ALL" ||
+            team.league === currentLeague;
+
+        const searchMatch =
+            !query ||
+            team.name.toLowerCase().includes(query) ||
+            team.city.toLowerCase().includes(query) ||
+            team.summary.toLowerCase().includes(query) ||
+            team.history.some(item =>
+                item.join(" ").toLowerCase().includes(query)
+            );
+
+        return leagueMatch && searchMatch;
+    });
+
+    if (!filtered.length) {
+        teamGrid.innerHTML =
+            `<div class="empty">NO CLUB FOUND_</div>`;
+        return;
+    }
+
+    teamGrid.innerHTML = filtered.map((team, index) => {
+
+        return `
+        <article
+            class="card"
+            style="--team-color:${team.color}"
+            onclick="openTeam('${team.short}')"
+        >
+            <div class="card-header">
+                <div class="logo-pixel">${team.short}</div>
+
+                <div>
+                    <div class="team-name">${team.name}</div>
+                    <div class="location">📍 ${team.city}</div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <p>
+                    <span class="year">${team.origin}</span>
+                    — franchise origin
+                </p>
+
+                <p>${team.summary}</p>
+
+                <span class="tag">${team.league === "AL" ? "AMERICAN" : "NATIONAL"}</span>
+                <span class="tag">${team.championships}</span>
+
+                <span class="click">[ CLICK TO EXPLORE ]</span>
+            </div>
+        </article>
+        `;
+    }).join("");
+}
+
+function openTeam(short) {
+
+    const team = teams.find(t => t.short === short);
+
+    if (!team) return;
+
+    document.documentElement.style
+        .setProperty("--team-color", team.color);
+
+    document.getElementById("modalName").textContent =
+        team.name;
+
+    document.getElementById("modalLocation").textContent =
+        `📍 ${team.city} // ${team.league === "AL" ? "AMERICAN LEAGUE" : "NATIONAL LEAGUE"}`;
+
+    document.getElementById("modalSummary").textContent =
+        team.summary;
+
+    document.getElementById("timeline").innerHTML =
+        team.history.map(item => `
+            <div class="timeline-item">
+                <div class="timeline-year">${item[0]}</div>
+                <div>${item[1]}</div>
+            </div>
+        `).join("");
+
+    document.getElementById("modalTags").innerHTML = `
+        <span class="tag">${team.origin} ORIGIN</span>
+        <span class="tag">${team.championships}</span>
+        <span class="tag">${team.league === "AL" ? "AL" : "NL"}</span>
+    `;
+
+    document.getElementById("modal").classList.add("open");
+}
+
+function closeModal() {
+    document.getElementById("modal").classList.remove("open");
+}
+
+search.addEventListener("input", renderTeams);
+
+filters.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        filters.forEach(b => b.classList.remove("active"));
+
+        button.classList.add("active");
+
+        currentLeague =
+            button.dataset.league;
+
+        renderTeams();
+    });
+
+});
+
+document.getElementById("modal").addEventListener("click", e => {
+
+    if (e.target.id === "modal") {
+        closeModal();
+    }
+
+});
+
+document.addEventListener("keydown", e => {
+
+    if (e.key === "Escape") {
+        closeModal();
+    }
+
+});
+
+renderTeams();
+</script>
+
+</body>
+</html>
